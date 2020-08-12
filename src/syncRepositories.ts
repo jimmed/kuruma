@@ -3,10 +3,15 @@ import { getConfig } from "./getConfig";
 import { Octokit } from "@octokit/rest";
 import decompress from "decompress";
 import { resolve } from "path";
+import { resolvePtr } from "dns";
 
 export interface SyncRepositoriesArgs {
   config: string;
   cache: string;
+}
+
+export interface SyncModulesArgs extends SyncRepositoriesArgs {
+  target: string;
 }
 
 export async function syncRepositories({
@@ -38,6 +43,10 @@ export async function syncRepositories({
     );
   }
 
+  if (!toAdd.length && !toRemove.length) {
+    console.log("Nothing to sync");
+  }
+
   const gh = new Octokit({ auth: process.env.GITHUB_AUTH_TOKEN });
   await Promise.all(
     toAdd.map(async (repo) => {
@@ -62,4 +71,39 @@ export async function syncRepositories({
   if (!requiredHashes.length) {
     await fs.rmdir(cachePath);
   }
+}
+
+export async function syncModules({
+  config: configPath,
+  cache: cachePath,
+  target: targetPath,
+}: SyncModulesArgs) {
+  const config = await getConfig(configPath);
+  const requiredLinks = config.modules.map((mod) => {
+    const [owner, repoName] = mod.repository.split("/");
+    const repository = config.repositories.find(
+      (repo) => repo.org === owner && repo.name === repoName
+    )!;
+    const target = mod.namespace
+      ? [
+          ...(Array.isArray(mod.namespace)
+            ? mod.namespace
+            : [mod.namespace]
+          ).map((x) => `[${x}]`),
+          mod.path?.split("/").slice(-1)[0] ?? repoName,
+        ]
+      : [mod.path?.split("/").slice(-1)[0] ?? repoName];
+    return {
+      from: mod.path
+        ? resolve(cachePath, repository.sha, mod.path)
+        : resolve(cachePath, repository.sha),
+      to: resolve(targetPath, ...target),
+    };
+  });
+  console.table(requiredLinks);
+}
+
+export async function sync(args: SyncModulesArgs) {
+  await syncRepositories(args);
+  await syncModules(args);
 }

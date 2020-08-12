@@ -5,7 +5,7 @@ import {
   subscribeToRepository,
   unsubscribeFromRepository,
 } from "./subscribeToRepository";
-import { syncRepositories } from "./syncRepositories";
+import { sync } from "./syncRepositories";
 
 yargs
   .option("verbose", {
@@ -25,6 +25,12 @@ yargs
     type: "string",
     default: resolve(process.cwd(), "cache"),
     describe: "Path to cache directory",
+  })
+  .option("target", {
+    alias: "t",
+    type: "string",
+    default: resolve(process.cwd(), "resources"),
+    describe: "Path to target output directory",
   })
   .command(
     "list",
@@ -57,10 +63,5 @@ yargs
     (yargs) => yargs.positional("repo", { type: "string", demandOption: true }),
     unsubscribeFromRepository
   )
-  .command(
-    "sync",
-    "synchronize repositories and modules",
-    () => {},
-    syncRepositories
-  )
+  .command("sync", "synchronize repositories and modules", () => {}, sync)
   .demandCommand().argv;
