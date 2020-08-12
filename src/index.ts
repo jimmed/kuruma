@@ -5,6 +5,7 @@ import {
   subscribeToRepository,
   unsubscribeFromRepository,
 } from "./subscribeToRepository";
+import { syncRepositories } from "./syncRepositories";
 
 yargs
   .option("verbose", {
@@ -17,6 +18,13 @@ yargs
     alias: "c",
     type: "string",
     default: resolve(process.cwd(), "fvm.yml"),
+    describe: "Path to fvm.yml file",
+  })
+  .option("cache", {
+    alias: "C",
+    type: "string",
+    default: resolve(process.cwd(), "cache"),
+    describe: "Path to cache directory",
   })
   .command(
     "list",
@@ -48,5 +56,11 @@ yargs
     "unsubscribe from a new repository",
     (yargs) => yargs.positional("repo", { type: "string", demandOption: true }),
     unsubscribeFromRepository
+  )
+  .command(
+    "sync",
+    "synchronize repositories and modules",
+    () => {},
+    syncRepositories
   )
   .demandCommand().argv;

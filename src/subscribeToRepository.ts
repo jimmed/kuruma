@@ -159,8 +159,6 @@ export async function subscribeToRepository({
     ],
   };
 
-  // TODO: Download to cache
-
   await saveConfigFile(configPath, newConfig);
 
   console.log(`Subscribed to ${owner}/${repo}`);

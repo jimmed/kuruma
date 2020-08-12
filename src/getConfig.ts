@@ -97,9 +97,8 @@ export function validateConfig(config: Partial<ConfigFile>) {
 
 export async function saveConfigFile(
   path: string,
-  config: ConfigFile
+  { _exists, ...config }: ConfigFile
 ): Promise<void> {
   validateConfig(config);
-  console.log(config);
   await fs.writeFile(path, stringifyYaml(config), "utf8");
 }
