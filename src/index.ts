@@ -1,3 +1,4 @@
+#!/usr/env/node
 import { resolve } from "path";
 import yargs from "yargs";
 import { listRepositoriesAndModules } from "./listRepositoriesAndModules";
