@@ -17,8 +17,8 @@ yargs
   .option("config", {
     alias: "c",
     type: "string",
-    default: resolve(process.cwd(), "fvm.yml"),
-    describe: "Path to fvm.yml file",
+    default: resolve(process.cwd(), "kuruma.yml"),
+    describe: "Path to kuruma.yml file",
   })
   .option("cache", {
     alias: "C",

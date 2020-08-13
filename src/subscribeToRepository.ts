@@ -150,7 +150,7 @@ export async function subscribeToRepository({
         const mod: Module = {
           repository: `${owner}/${repo}`,
         };
-        const modulePath = path.split("/").slice(-2, -1)[0];
+        const modulePath = path.split("/").slice(0, -1).join("/");
         if (modulePath) {
           mod.path = modulePath;
         }
@@ -177,7 +177,6 @@ export async function unsubscribeFromRepository({
     return;
   }
 
-  // TODO: Delete repo from cache
   // TODO: Delete child modules from config
   const newConfig: ConfigFile = {
     ...currentConfig,
