@@ -149,10 +149,17 @@ export async function subscribeToRepository({
     modules: [
       ...currentConfig.modules,
       ...entries.map(([path]) => {
+        const modulePathParts = path.split("/").slice(0, -1);
+        const moduleNamespace = modulePathParts.filter((x) =>
+          x.match(/^\[.+\]$/)
+        );
+        const modulePath = modulePathParts.join("/");
+
         const mod: Module = {
           repository: `${owner}/${repo}`,
+          namespace: [repo, ...moduleNamespace],
         };
-        const modulePath = path.split("/").slice(0, -1).join("/");
+
         if (modulePath) {
           mod.path = modulePath;
         }
