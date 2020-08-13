@@ -6,7 +6,7 @@
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node ./src/index.ts",
+    "start": "ts-node ./src/index.ts -c .dev/kuruma.yml -C .dev/cache -t .dev/resources",
     "build": "ncc build ./src/index.ts -o dist/",
     "prepublishOnly": "yarn build"
   },
