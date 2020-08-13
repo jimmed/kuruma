@@ -111,9 +111,11 @@ export async function subscribeToRepository({
                       ((identifier as StringCallExpression).base as Identifier)
                         .name,
                     (x.expression
-                      .arguments as TableConstructorExpression).fields.map(
-                      (field) => (field.value as StringLiteral).raw.slice(1, -1)
-                    ),
+                      .arguments as TableConstructorExpression).fields
+                      .filter((field) => field.value.type === "StringLiteral")
+                      .map((field) =>
+                        (field.value as StringLiteral).raw.slice(1, -1)
+                      ),
                   ];
               }
               return [];

@@ -6,7 +6,7 @@
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
   "scripts": {
-    "start": "ncc run ./src/index.ts",
+    "start": "ts-node ./src/index.ts",
     "build": "ncc build ./src/index.ts -o dist/",
     "prepublishOnly": "yarn build"
   },
@@ -27,6 +27,7 @@
     "@types/node": "^14.0.27",
     "@types/yargs": "^15.0.5",
     "@vercel/ncc": "^0.23.0",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
   "dependencies": {
