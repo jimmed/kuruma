@@ -150,9 +150,9 @@ export async function subscribeToRepository({
       ...currentConfig.modules,
       ...entries.map(([path]) => {
         const modulePathParts = path.split("/").slice(0, -1);
-        const moduleNamespace = modulePathParts.filter((x) =>
-          x.match(/^\[.+\]$/)
-        );
+        const moduleNamespace = modulePathParts
+          .filter((x) => x.match(/^\[.+\]$/))
+          .map((x) => x.slice(1, -1));
         const modulePath = modulePathParts.join("/");
 
         const mod: Module = {

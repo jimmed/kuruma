@@ -88,10 +88,23 @@ export function validateConfig(config: Partial<ConfigFile>) {
       throw new Error(
         `Module #${index + 1}'s path must be a string if specified`
       );
-    if (module.namespace && typeof module.namespace !== "string")
+    if (
+      module.namespace &&
+      typeof module.namespace !== "string" &&
+      !(
+        Array.isArray(module.namespace) &&
+        module.namespace.every(
+          (x) => typeof x === "string" && !x.startsWith("[")
+        )
+      )
+    ) {
+      console.log(module);
       throw new Error(
-        `Module #${index + 1}'s .namespace must be a string if specified`
+        `Module #${
+          index + 1
+        }'s .namespace must be a string or array or strings if specified`
       );
+    }
   });
 }
 
