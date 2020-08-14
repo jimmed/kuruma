@@ -1,12 +1,12 @@
 {
   "name": "kuruma-cli",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node ./src/index.ts -c .dev/kuruma.yml -C .dev/cache -t .dev/resources",
+    "start": "ts-node ./src/index.ts -c ./.dev/kuruma.yml -C .dev/cache -t .dev/resources",
     "build": "ncc build ./src/index.ts -o dist/",
     "prepublishOnly": "yarn build"
   },
