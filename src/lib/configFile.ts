@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
-import { safeLoad as parseYaml, safeDump as stringifyYaml } from "js-yaml";
+import { safeDump as stringifyYaml, safeLoad as parseYaml } from "js-yaml";
+import { flow, split, tap, where, matches } from "lodash/fp";
 
 export interface Repository {
   org: string;
@@ -115,3 +116,27 @@ export async function saveConfigFile(
   validateConfig(config);
   await fs.writeFile(path, stringifyYaml(config), "utf8");
 }
+
+export const splitRepositoryName: (
+  identifier: string
+) => [string, string] = flow(
+  split("/"),
+  tap((parts) => {
+    if (parts.length !== 2)
+      throw new Error(`Invalid repository identifier: ${parts.join("/")}`);
+  })
+);
+
+export const getRepositoryFromConfig = (
+  config: ConfigFile,
+  identifier: string
+) => {
+  const [org, name] = splitRepositoryName(identifier);
+  const repository = config.repositories.find(matches({ org, name }));
+  if (!repository) {
+    throw new Error(
+      `Repository ${identifier} is not subscribed in config file`
+    );
+  }
+  return repository;
+};

@@ -7,6 +7,8 @@ import {
   unsubscribeFromRepository,
 } from "./subscribeToRepository";
 import { sync } from "./syncRepositories";
+import { drawDependencyTree } from "./dependencyTree";
+import { outputLoadOrder } from "./loadOrder";
 
 yargs
   .option("verbose", {
@@ -65,4 +67,16 @@ yargs
     unsubscribeFromRepository
   )
   .command("sync", "synchronize repositories and modules", () => {}, sync)
+  .command(
+    "tree",
+    "lists the dependency tree of all modules",
+    () => {},
+    drawDependencyTree
+  )
+  .command(
+    "loadOrder",
+    "lists the load order of modules",
+    () => {},
+    outputLoadOrder
+  )
   .demandCommand().argv;

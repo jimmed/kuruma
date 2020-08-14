@@ -1,4 +1,4 @@
-import { getConfig } from "./getConfig";
+import { getConfig } from "./lib/configFile";
 
 interface ListRepositoriesAndModulesArgs {
   config: string;

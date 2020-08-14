@@ -8,7 +8,12 @@ import {
   StringCallExpression,
 } from "luaparse";
 import { parse as parseUrl } from "url";
-import { getConfig, ConfigFile, saveConfigFile, Module } from "./getConfig";
+import {
+  getConfig,
+  ConfigFile,
+  saveConfigFile,
+  Module,
+} from "./lib/configFile";
 
 interface SubscribeToRepositoryArgs {
   repo: string;

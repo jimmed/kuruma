@@ -2,7 +2,7 @@ import { Octokit } from "@octokit/rest";
 import decompress from "decompress";
 import { promises as fs } from "fs";
 import { dirname, relative, resolve } from "path";
-import { getConfig } from "./getConfig";
+import { getConfig } from "./lib/configFile";
 import { ncp } from "ncp";
 import { promisify } from "util";
 
