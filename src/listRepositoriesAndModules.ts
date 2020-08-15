@@ -17,15 +17,23 @@ export async function listRepositoriesAndModules({
       console.warn("No repositories defined in config");
     } else {
       console.log("Subscribed repositories:");
-      console.table(manifest.repositories);
+      manifest.repositories.forEach((repo) => {
+        console.log(` - ${repo.org}/${repo.name} (${repo.sha.slice(0, 7)})`);
+      });
     }
   }
   if (modules) {
+    if (modules && repositories) console.log();
     if (!manifest.modules.length) {
       console.warn("No modules defined in config");
     } else {
-      console.log("Installed modules:");
-      console.table(manifest.modules);
+      console.log("Available modules:");
+      manifest.modules.forEach((module) => {
+        console.log(
+          ` - ${module.repository}${module.path ? "/" + module.path : ""}`,
+          module.enabled ? "(enabled)" : ""
+        );
+      });
     }
   }
 }

@@ -18,6 +18,8 @@ export interface Module {
   path?: string;
   /** An optional `[namespace]` to prepend to the target installation path */
   namespace?: string | string[];
+  /** Whether the module should be installed (default = false) */
+  enabled?: boolean;
 }
 
 export interface ConfigFile {

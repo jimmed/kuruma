@@ -14,10 +14,13 @@ All of the the main commands work by making changes to your Kuruma config file. 
 - [x] Synchronise installed modules
 - [x] Automatically generate resource load order
 - [ ] Enable/disable individual modules
+- [ ] Track specific branches/refs of a repository
 - [ ] Fancy [listr](https://npm.im/listr)-based CLI
-- [ ] Internationalisation
+- [ ] Update a repository and its resources
+- [ ] Interactive update command
 - [ ] Automatic server config
 - [ ] Database migration capabilities
+- [ ] Internationalisation
 
 ## Installation
 
