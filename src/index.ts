@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { resolve } from "path";
 import yargs from "yargs";
+import { disableResource } from "./command/disable";
+import { enableResource } from "./command/enable";
 import { listRepositoriesAndResources } from "./command/list";
-import {
-  subscribeToRepository,
-  unsubscribeFromRepository,
-} from "./command/subscribe";
+import { outputLoadOrder } from "./command/loadOrder";
+import { subscribeToRepository } from "./command/subscribe";
 import { sync } from "./command/sync";
 import { drawDependencyTree } from "./command/tree";
-import { outputLoadOrder } from "./command/loadOrder";
+import { unsubscribeFromRepository } from "./command/unsubscribe";
 
 yargs
   .option("verbose", {
@@ -41,7 +41,7 @@ yargs
     (yargs) =>
       yargs
         .option("resources", {
-          alias: "m",
+          alias: "R",
           type: "boolean",
           default: true,
           describe: "list resources",
@@ -65,6 +65,20 @@ yargs
     "unsubscribe from a new repository",
     (yargs) => yargs.positional("repo", { type: "string", demandOption: true }),
     unsubscribeFromRepository
+  )
+  .command(
+    "enable <resource>",
+    "enable a resource",
+    (yargs) =>
+      yargs.positional("resource", { type: "string", demandOption: true }),
+    enableResource
+  )
+  .command(
+    "disable <resource>",
+    "disable a resource",
+    (yargs) =>
+      yargs.positional("resource", { type: "string", demandOption: true }),
+    disableResource
   )
   .command("sync", "synchronize repositories and resources", () => {}, sync)
   .command(
