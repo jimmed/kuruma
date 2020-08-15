@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { resolve } from "path";
 import yargs from "yargs";
-import { listRepositoriesAndModules } from "./command/list";
+import { listRepositoriesAndResources } from "./command/list";
 import {
   subscribeToRepository,
   unsubscribeFromRepository,
@@ -37,14 +37,14 @@ yargs
   })
   .command(
     "list",
-    "lists all repositories and modules",
+    "lists all repositories and resources",
     (yargs) =>
       yargs
-        .option("modules", {
+        .option("resources", {
           alias: "m",
           type: "boolean",
           default: true,
-          describe: "list modules",
+          describe: "list resources",
         })
         .option("repositories", {
           alias: "r",
@@ -52,7 +52,7 @@ yargs
           default: true,
           describe: "list repositories",
         }),
-    listRepositoriesAndModules
+    listRepositoriesAndResources
   )
   .command(
     "subscribe <repo>",
@@ -66,16 +66,16 @@ yargs
     (yargs) => yargs.positional("repo", { type: "string", demandOption: true }),
     unsubscribeFromRepository
   )
-  .command("sync", "synchronize repositories and modules", () => {}, sync)
+  .command("sync", "synchronize repositories and resources", () => {}, sync)
   .command(
     "tree",
-    "lists the dependency tree of all modules",
+    "lists the dependency tree of all resources",
     () => {},
     drawDependencyTree
   )
   .command(
     "load-order",
-    "lists the load order of modules",
+    "lists the load order of resources",
     () => {},
     outputLoadOrder
   )

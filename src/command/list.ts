@@ -1,16 +1,16 @@
 import { getConfig } from "../lib/configFile";
 
-interface ListRepositoriesAndModulesArgs {
+interface ListRepositoriesAndResourcesArgs {
   config: string;
-  modules: boolean;
+  resources: boolean;
   repositories: boolean;
 }
 
-export async function listRepositoriesAndModules({
+export async function listRepositoriesAndResources({
   config,
-  modules,
+  resources,
   repositories,
-}: ListRepositoriesAndModulesArgs) {
+}: ListRepositoriesAndResourcesArgs) {
   const manifest = await getConfig(config);
   if (repositories) {
     if (!manifest.repositories.length) {
@@ -22,16 +22,18 @@ export async function listRepositoriesAndModules({
       });
     }
   }
-  if (modules) {
-    if (modules && repositories) console.log();
-    if (!manifest.modules.length) {
-      console.warn("No modules defined in config");
+  if (resources) {
+    if (resources && repositories) console.log();
+    if (!manifest.resources.length) {
+      console.warn("No resources defined in config");
     } else {
-      console.log("Available modules:");
-      manifest.modules.forEach((module) => {
+      console.log("Available resources:");
+      manifest.resources.forEach((resource) => {
         console.log(
-          ` - ${module.repository}${module.path ? "/" + module.path : ""}`,
-          module.enabled ? "(enabled)" : ""
+          ` - ${resource.repository}${
+            resource.path ? "/" + resource.path : ""
+          }`,
+          resource.enabled ? "(enabled)" : ""
         );
       });
     }

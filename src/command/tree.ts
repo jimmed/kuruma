@@ -32,7 +32,7 @@ export const generateTree = (
   );
 
   return Object.fromEntries(
-    thisLevel.map((dep) => [dep.module, generateTree(dependencies, dep)])
+    thisLevel.map((dep) => [dep.resource, generateTree(dependencies, dep)])
   );
 };
 

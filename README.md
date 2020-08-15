@@ -11,9 +11,9 @@ All of the the main commands work by making changes to your Kuruma config file. 
 ## Roadmap for v1.0.0
 
 - [x] Subscribe/unsubscribe from repositories
-- [x] Synchronise installed modules
+- [x] Synchronise installed resources
 - [x] Automatically generate resource load order
-- [ ] Enable/disable individual modules
+- [ ] Enable/disable individual resources
 - [ ] Track specific branches/refs of a repository
 - [ ] Fancy [listr](https://npm.im/listr)-based CLI
 - [ ] Update a repository and its resources
@@ -59,7 +59,7 @@ kuruma subscribe extendedmode/extendedmode
 kuruma subscribe https://github.com/extendedmode/extendedmode
 ```
 
-Note that the modules will not be installed until the `sync` command is run.
+Note that the resources will not be installed until the `sync` command is run.
 
 ### Unsubscribe from a repository
 
@@ -110,10 +110,10 @@ kuruma sync
 
 ### Generating a load order
 
-If you have enabled a large number of modules, you may find that determining the correct load
+If you have enabled a large number of resources, you may find that determining the correct load
 order in your `server.cfg` file becomes tedious.
 
-Kuruma can inspect each resource's dependencies, and so it is able to construct a dependency graph based on your enabled modules. Using this, it can determine a load order for you. Run the `load-order` command to try this for yourself.
+Kuruma can inspect each resource's dependencies, and so it is able to construct a dependency graph based on your enabled resources. Using this, it can determine a load order for you. Run the `load-order` command to try this for yourself.
 
 ```bash
 kuruma load-order
@@ -151,7 +151,7 @@ You can pipe this output into your `server.cfg` using this command:
 kuruma load-order >> ./path/to/server.cfg
 ```
 
-> **Note:** In order for this to work correctly, resources must correctly specify their `dependency` or `dependencies` in their `fxmanifest.lua` (or `__resource.lua`) file. The ability to manually override module dependencies will be added in a future version.
+> **Note:** In order for this to work correctly, resources must correctly specify their `dependency` or `dependencies` in their `fxmanifest.lua` (or `__resource.lua`) file. The ability to manually override resource dependencies will be added in a future version.
 
 ## Usage with Docker
 

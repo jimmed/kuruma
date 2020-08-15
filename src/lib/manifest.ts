@@ -39,7 +39,7 @@ export const isSupportedFxVersion = (
 ): fxVersion is FxVersion =>
   Object.values<string>(FxVersion).includes(basename(fxVersion));
 
-export interface CommonModuleManifestProperties {
+export interface CommonResourceManifestProperties {
   name?: string;
   game?: SupportedGame;
   games?: SupportedGame[];
@@ -80,7 +80,7 @@ export interface CommonModuleManifestProperties {
   provide?: string;
 }
 
-export interface FxManifestProperties extends CommonModuleManifestProperties {
+export interface FxManifestProperties extends CommonResourceManifestProperties {
   /**
    * Defines the supported functionality for the resource.
    * This has to be one of a specific set of words.
@@ -93,7 +93,7 @@ export interface FxManifestProperties extends CommonModuleManifestProperties {
  * @deprecated You should be using `fxmanifest.lua` instead
  */
 export interface LegacyResourceManifestProperties
-  extends CommonModuleManifestProperties {
+  extends CommonResourceManifestProperties {
   /**
    * @deprecated You should be using `fxmanifest.lua` and `fx_version` instead.
    *
@@ -106,17 +106,17 @@ export interface LegacyResourceManifestProperties
   resource_manifest_version: string;
 }
 
-export interface ModuleManifestFile {
+export interface ResourceManifestFile {
   type: ManifestFileType;
-  content: CommonModuleManifestProperties;
+  content: CommonResourceManifestProperties;
 }
 
-export interface FxManifestFile extends ModuleManifestFile {
+export interface FxManifestFile extends ResourceManifestFile {
   type: ManifestFileType.FxManifest;
   content: FxManifestProperties;
 }
 
-export interface LegacyManifestFile extends ModuleManifestFile {
+export interface LegacyManifestFile extends ResourceManifestFile {
   type: ManifestFileType.LegacyResource;
   content: LegacyResourceManifestProperties;
 }
@@ -158,11 +158,11 @@ export const parseCallStatement = (
 };
 
 export async function readManifestFile(
-  modulePath: string
+  resourcePath: string
 ): Promise<AnyManifestFile> {
   const potentialManifestPaths = Object.values(
     ManifestFileType
-  ).map((filename) => resolve(modulePath, filename));
+  ).map((filename) => resolve(resourcePath, filename));
 
   const manifestFiles = await Promise.all(
     potentialManifestPaths.map(async (path) => {
@@ -187,7 +187,7 @@ export async function readManifestFile(
     .find(Boolean);
 
   if (!firstManifestFile)
-    throw new Error(`No manifest files found in ${modulePath}`);
+    throw new Error(`No manifest files found in ${resourcePath}`);
 
   return firstManifestFile as AnyManifestFile;
 }
@@ -210,7 +210,7 @@ const extractProperties = flow(
 
 export function parseManifestFile(
   rawLuaCode: string
-): ModuleManifestFile["content"] {
+): ResourceManifestFile["content"] {
   try {
     const extractedProperties = extractProperties(rawLuaCode);
     return Object.fromEntries(extractedProperties);
@@ -226,17 +226,17 @@ export const getManifestsFromConfig = async (
 ): Promise<Record<string, AnyManifestFile>> =>
   Object.fromEntries(
     await Promise.all(
-      config.modules.map(async (mod) => {
+      config.resources.map(async (mod) => {
         const { sha } = getRepositoryFromConfig(config, mod.repository)!;
-        const modulePath = mod.path
+        const resourcePath = mod.path
           ? resolve(cachePath, sha, mod.path)
           : resolve(cachePath, sha);
-        const moduleName = [mod.repository, ...(mod.path ? [mod.path] : [])]
+        const resourceName = [mod.repository, ...(mod.path ? [mod.path] : [])]
           .join("/")
           .split("/")
           .slice(-1);
-        const manifest = await readManifestFile(modulePath);
-        return [moduleName, manifest];
+        const manifest = await readManifestFile(resourcePath);
+        return [resourceName, manifest];
       })
     )
   );
