@@ -74,7 +74,7 @@ yargs
     drawDependencyTree
   )
   .command(
-    "loadOrder",
+    "load-order",
     "lists the load order of modules",
     () => {},
     outputLoadOrder
