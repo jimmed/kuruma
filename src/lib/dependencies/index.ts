@@ -16,10 +16,19 @@ export const resolveDependenciesFromManifests = (
   Object.entries(manifests).map(([name, { content }]) => {
     const { name: overrideName, dependency, dependencies, provide } = content;
     const localDeps = dependency ? [dependency] : dependencies ?? [];
+    const provides =
+      provide ?? (overrideName?.match(/^[a-z0-9-_]+$/i) ? overrideName : name);
+    if (name !== provides) {
+      console.warn(
+        `Resource "${name}" overrides its name as "${provides}" using the "${
+          provide ? "provide" : "name"
+        }" property in its manifest file`
+      );
+    }
     return {
       resource: name,
       requires: localDeps,
-      provides: provide ?? overrideName ?? name,
+      provides,
     };
   });
 
