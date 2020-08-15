@@ -1,0 +1,28 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Unit Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install node.js
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "12"
+      - name: Install dependencies from npm
+        run: yarn --frozen-lockfile
+      - name: Run unit tests
+        uses: mattallty/jest-github-action@v1
+        with:
+          test-command: "yarn test"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

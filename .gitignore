@@ -6,3 +6,4 @@ kuruma.yml
 cache
 resources
 .dev
+coverage
