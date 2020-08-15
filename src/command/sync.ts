@@ -1,10 +1,10 @@
 import { Octokit } from "@octokit/rest";
 import decompress from "decompress";
 import { promises as fs } from "fs";
-import { dirname, relative, resolve } from "path";
-import { getConfig } from "./lib/configFile";
 import { ncp } from "ncp";
+import { dirname, relative, resolve } from "path";
 import { promisify } from "util";
+import { getConfig } from "../lib/configFile";
 
 const copyDirectory = promisify(ncp);
 
@@ -13,7 +13,7 @@ export interface SyncRepositoriesArgs {
   cache: string;
 }
 
-export interface SyncModulesArgs extends SyncRepositoriesArgs {
+export interface SyncResourcesArgs extends SyncRepositoriesArgs {
   target: string;
 }
 
@@ -78,14 +78,14 @@ export async function syncRepositories({
   }
 }
 
-export async function syncModules({
+export async function syncResources({
   config: configPath,
   cache: cachePath,
   target: targetPath,
-}: SyncModulesArgs) {
+}: SyncResourcesArgs) {
   const config = await getConfig(configPath);
-  const targetModules = await Promise.all(
-    config.modules.map(async (mod) => {
+  const targetResources = await Promise.all(
+    config.resources.map(async (mod) => {
       const [owner, repoName] = mod.repository.split("/");
       const target = mod.namespace
         ? [
@@ -101,7 +101,7 @@ export async function syncModules({
       );
       if (!repository) {
         throw new Error(
-          `Module ${target.join("/")} depends on the ${
+          `Resource ${target.join("/")} depends on the ${
             mod.repository
           } repository, but it is not subscribed.`
         );
@@ -133,9 +133,9 @@ export async function syncModules({
     })
   );
 
-  const toAdd = targetModules.filter((link) => link.shouldCreate);
+  const toAdd = targetResources.filter((link) => link.shouldCreate);
   if (!toAdd.length) {
-    console.info("No modules to sync");
+    console.info("No resources to sync");
     return;
   }
 
@@ -145,7 +145,7 @@ export async function syncModules({
       await copyDirectory(x.from, x.to, { stopOnErr: true });
     })
   );
-  console.log("Linked modules:");
+  console.log("Linked resources:");
   toAdd.forEach((x) =>
     console.log(
       ` - ${relative(process.cwd(), x.to)} -> ${relative(
@@ -156,7 +156,7 @@ export async function syncModules({
   );
 }
 
-export async function sync(args: SyncModulesArgs) {
+export async function sync(args: SyncResourcesArgs) {
   await syncRepositories(args);
-  await syncModules(args);
+  await syncResources(args);
 }

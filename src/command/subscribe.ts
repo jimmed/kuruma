@@ -3,19 +3,19 @@ import {
   CallStatement,
   Identifier,
   parse as parseLua,
+  StringCallExpression,
   StringLiteral,
   TableConstructorExpression,
-  StringCallExpression,
 } from "luaparse";
 import { parse as parseUrl } from "url";
 import {
-  getConfig,
   ConfigFile,
+  getConfig,
+  Resource,
   saveConfigFile,
-  Module,
-} from "./lib/configFile";
+} from "../lib/configFile";
 
-interface SubscribeToRepositoryArgs {
+export interface SubscribeToRepositoryArgs {
   repo: string;
   config: string;
 }
@@ -85,7 +85,7 @@ export async function subscribeToRepository({
     );
   }
 
-  const modules = Object.fromEntries(
+  const resources = Object.fromEntries(
     await Promise.all(
       manifests.map(async (manifest) => {
         const { data: file } = await gh.git.getBlob({
@@ -96,7 +96,7 @@ export async function subscribeToRepository({
 
         const content = Buffer.from(file.content, "base64").toString("utf8");
 
-        const modules = Object.fromEntries(
+        const resources = Object.fromEntries(
           parseLua(content)
             .body.filter((x): x is CallStatement => x.type === "CallStatement")
             .map((x) => {
@@ -127,17 +127,17 @@ export async function subscribeToRepository({
             })
             .filter((x) => x?.[0])
         );
-        return [manifest.path, modules];
+        return [manifest.path, resources];
       })
     )
   );
-  const entries = Object.entries<Module>(modules);
+  const entries = Object.entries<Resource>(resources);
   console.log(
-    `Repository contains ${entries.length} module${
+    `Repository contains ${entries.length} resource${
       entries.length === 1 ? "" : "s"
     }:`
   );
-  Object.entries(modules).forEach(([path, mod]: [string, any]) => {
+  Object.entries(resources).forEach(([path, mod]: [string, any]) => {
     console.info(
       ` - ${path.split("/").slice(-2, -1)[0] || repo} (${
         mod.version ?? "unknown version"
@@ -151,22 +151,22 @@ export async function subscribeToRepository({
       ...currentConfig.repositories,
       { org: owner, name: repo, sha: master.sha },
     ],
-    modules: [
-      ...currentConfig.modules,
+    resources: [
+      ...currentConfig.resources,
       ...entries.map(([path]) => {
-        const modulePathParts = path.split("/").slice(0, -1);
-        const moduleNamespace = modulePathParts
+        const resourcePathParts = path.split("/").slice(0, -1);
+        const resourceNamespace = resourcePathParts
           .filter((x) => x.match(/^\[.+\]$/))
           .map((x) => x.slice(1, -1));
-        const modulePath = modulePathParts.join("/");
+        const resourcePath = resourcePathParts.join("/");
 
-        const mod: Module = {
+        const mod: Resource = {
           repository: `${owner}/${repo}`,
-          namespace: [repo, ...moduleNamespace],
+          namespace: [repo, ...resourceNamespace],
         };
 
-        if (modulePath) {
-          mod.path = modulePath;
+        if (resourcePath) {
+          mod.path = resourcePath;
         }
         return mod;
       }),
@@ -176,30 +176,4 @@ export async function subscribeToRepository({
   await saveConfigFile(configPath, newConfig);
 
   console.log(`Subscribed to ${owner}/${repo}`);
-}
-
-export async function unsubscribeFromRepository({
-  repo: url,
-  config: configPath,
-}: SubscribeToRepositoryArgs) {
-  const currentConfig = await getConfig(configPath);
-  const { owner, repo } = getRepoIdentifier(url);
-  if (
-    !currentConfig.repositories.some((r) => r.name === repo && r.org === owner)
-  ) {
-    console.info(`Not subscribed to ${owner}/${repo}`);
-    return;
-  }
-
-  // TODO: Delete child modules from config
-  const newConfig: ConfigFile = {
-    ...currentConfig,
-    repositories: currentConfig.repositories.filter(
-      (x) => x.org !== owner && x.name !== "repo"
-    ),
-  };
-
-  await saveConfigFile(configPath, newConfig);
-
-  console.log(`Unsubscribed from ${owner}/${repo}`);
 }

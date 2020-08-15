@@ -8,7 +8,7 @@ export interface Repository {
   sha: string;
 }
 
-export interface Module {
+export interface Resource {
   /** The id of the repository to install from */
   repository: string;
   /**
@@ -18,6 +18,8 @@ export interface Module {
   path?: string;
   /** An optional `[namespace]` to prepend to the target installation path */
   namespace?: string | string[];
+  /** Whether the resource should be installed (default = false) */
+  enabled?: boolean;
 }
 
 export interface ConfigFile {
@@ -25,8 +27,8 @@ export interface ConfigFile {
   version: 1;
   // The subscribed repositories
   repositories: Repository[];
-  // The modules that should be installed
-  modules: Module[];
+  // The resources that should be installed
+  resources: Resource[];
 }
 
 export async function readConfigFile(
@@ -52,7 +54,7 @@ export async function getConfig(path: string): Promise<ConfigFile> {
     _exists: exists,
     version: 1,
     repositories: [],
-    modules: [],
+    resources: [],
     ...config,
   };
   validateConfig(fullConfig);
@@ -77,31 +79,31 @@ export function validateConfig(config: Partial<ConfigFile>) {
       throw new Error(`Repository #${index + 1}'s version must be a string`);
   });
 
-  if (config.modules && !Array.isArray(config.modules)) {
-    throw new Error(`Modules must be an array`);
+  if (config.resources && !Array.isArray(config.resources)) {
+    throw new Error(`Resources must be an array`);
   }
-  config.modules?.forEach((module, index) => {
-    if (typeof module !== "object")
-      throw new Error(`Module ${index + 1} must be an object`);
-    if (typeof module.repository !== "string" || !module.repository)
-      throw new Error(`Module #${index + 1}'s repository must be a string`);
-    if (module.path && typeof module.path !== "string")
+  config.resources?.forEach((resource, index) => {
+    if (typeof resource !== "object")
+      throw new Error(`Resource ${index + 1} must be an object`);
+    if (typeof resource.repository !== "string" || !resource.repository)
+      throw new Error(`Resource #${index + 1}'s repository must be a string`);
+    if (resource.path && typeof resource.path !== "string")
       throw new Error(
-        `Module #${index + 1}'s path must be a string if specified`
+        `Resource #${index + 1}'s path must be a string if specified`
       );
     if (
-      module.namespace &&
-      typeof module.namespace !== "string" &&
+      resource.namespace &&
+      typeof resource.namespace !== "string" &&
       !(
-        Array.isArray(module.namespace) &&
-        module.namespace.every(
+        Array.isArray(resource.namespace) &&
+        resource.namespace.every(
           (x) => typeof x === "string" && !x.startsWith("[")
         )
       )
     ) {
-      console.log(module);
+      console.log(resource);
       throw new Error(
-        `Module #${
+        `Resource #${
           index + 1
         }'s .namespace must be a string or array or strings if specified`
       );

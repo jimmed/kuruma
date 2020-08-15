@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 import { resolve } from "path";
 import yargs from "yargs";
-import { listRepositoriesAndModules } from "./listRepositoriesAndModules";
-import {
-  subscribeToRepository,
-  unsubscribeFromRepository,
-} from "./subscribeToRepository";
-import { sync } from "./syncRepositories";
-import { drawDependencyTree } from "./dependencyTree";
-import { outputLoadOrder } from "./loadOrder";
+import { disableResource } from "./command/disable";
+import { enableResource } from "./command/enable";
+import { listRepositoriesAndResources } from "./command/list";
+import { outputLoadOrder } from "./command/loadOrder";
+import { subscribeToRepository } from "./command/subscribe";
+import { sync } from "./command/sync";
+import { unsubscribeFromRepository } from "./command/unsubscribe";
 
 yargs
   .option("verbose", {
@@ -37,14 +36,14 @@ yargs
   })
   .command(
     "list",
-    "lists all repositories and modules",
+    "lists all repositories and resources",
     (yargs) =>
       yargs
-        .option("modules", {
-          alias: "m",
+        .option("resources", {
+          alias: "R",
           type: "boolean",
           default: true,
-          describe: "list modules",
+          describe: "list resources",
         })
         .option("repositories", {
           alias: "r",
@@ -52,7 +51,7 @@ yargs
           default: true,
           describe: "list repositories",
         }),
-    listRepositoriesAndModules
+    listRepositoriesAndResources
   )
   .command(
     "subscribe <repo>",
@@ -66,16 +65,24 @@ yargs
     (yargs) => yargs.positional("repo", { type: "string", demandOption: true }),
     unsubscribeFromRepository
   )
-  .command("sync", "synchronize repositories and modules", () => {}, sync)
   .command(
-    "tree",
-    "lists the dependency tree of all modules",
-    () => {},
-    drawDependencyTree
+    "enable <resource>",
+    "enable a resource",
+    (yargs) =>
+      yargs.positional("resource", { type: "string", demandOption: true }),
+    enableResource
   )
   .command(
+    "disable <resource>",
+    "disable a resource",
+    (yargs) =>
+      yargs.positional("resource", { type: "string", demandOption: true }),
+    disableResource
+  )
+  .command("sync", "synchronize repositories and resources", () => {}, sync)
+  .command(
     "load-order",
-    "lists the load order of modules",
+    "lists the load order of resources",
     () => {},
     outputLoadOrder
   )
