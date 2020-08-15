@@ -215,7 +215,7 @@ export function parseManifestFile(
     const extractedProperties = extractProperties(rawLuaCode);
     return Object.fromEntries(extractedProperties);
   } catch (error) {
-    // console.error(`Error while parsing Lua code:\n\n${rawLuaCode}\n\n`);
+    console.warn(`Error while parsing Lua code:\n\n${rawLuaCode}\n\n`);
     throw error;
   }
 }
@@ -226,7 +226,7 @@ export const getManifestsFromConfig = async (
 ): Promise<Record<string, AnyManifestFile>> =>
   Object.fromEntries(
     await Promise.all(
-      config.resources.map(async (mod) => {
+      config.resources.filter(get("enabled")).map(async (mod) => {
         const { sha } = getRepositoryFromConfig(config, mod.repository)!;
         const resourcePath = mod.path
           ? resolve(cachePath, sha, mod.path)

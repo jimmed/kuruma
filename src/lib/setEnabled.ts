@@ -33,9 +33,15 @@ export async function setResourceEnabled(
   const updatedConfig: ConfigFile = {
     ...config,
     resources: config.resources.map((res) =>
-      res === resource ? { ...res, enabled: args.enabled } : resource
+      res === resource ? { ...res, enabled: args.enabled } : res
     ),
   };
 
   await saveConfigFile(args.config, updatedConfig);
+
+  console.log(
+    `${args.enabled ? "Enabled" : "Disabled"} resource "${
+      args.resource
+    }" from repository "${resource.repository}"`
+  );
 }

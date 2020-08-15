@@ -7,7 +7,6 @@ import { listRepositoriesAndResources } from "./command/list";
 import { outputLoadOrder } from "./command/loadOrder";
 import { subscribeToRepository } from "./command/subscribe";
 import { sync } from "./command/sync";
-import { drawDependencyTree } from "./command/tree";
 import { unsubscribeFromRepository } from "./command/unsubscribe";
 
 yargs
@@ -81,12 +80,6 @@ yargs
     disableResource
   )
   .command("sync", "synchronize repositories and resources", () => {}, sync)
-  .command(
-    "tree",
-    "lists the dependency tree of all resources",
-    () => {},
-    drawDependencyTree
-  )
   .command(
     "load-order",
     "lists the load order of resources",
