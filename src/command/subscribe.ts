@@ -3,17 +3,17 @@ import {
   CallStatement,
   Identifier,
   parse as parseLua,
+  StringCallExpression,
   StringLiteral,
   TableConstructorExpression,
-  StringCallExpression,
 } from "luaparse";
 import { parse as parseUrl } from "url";
 import {
-  getConfig,
   ConfigFile,
-  saveConfigFile,
+  getConfig,
   Module,
-} from "./lib/configFile";
+  saveConfigFile,
+} from "../lib/configFile";
 
 interface SubscribeToRepositoryArgs {
   repo: string;

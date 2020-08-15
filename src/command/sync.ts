@@ -1,10 +1,10 @@
 import { Octokit } from "@octokit/rest";
 import decompress from "decompress";
 import { promises as fs } from "fs";
-import { dirname, relative, resolve } from "path";
-import { getConfig } from "./lib/configFile";
 import { ncp } from "ncp";
+import { dirname, relative, resolve } from "path";
 import { promisify } from "util";
+import { getConfig } from "../lib/configFile";
 
 const copyDirectory = promisify(ncp);
 

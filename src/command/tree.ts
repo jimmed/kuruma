@@ -1,12 +1,12 @@
-import { getConfig } from "./lib/configFile";
+import { getConfig } from "../lib/configFile";
 import {
   Dependency,
   isDependencyOf,
   resolveDependenciesFromManifests,
   warnOnMissingDependencies,
-} from "./lib/dependencies";
-import { getManifestsFromConfig } from "./lib/manifest";
-import { SyncRepositoriesArgs } from "./syncRepositories";
+} from "../lib/dependencies";
+import { getManifestsFromConfig } from "../lib/manifest";
+import { SyncRepositoriesArgs } from "./sync";
 
 interface DrawDependencyTreeArgs extends SyncRepositoriesArgs {}
 

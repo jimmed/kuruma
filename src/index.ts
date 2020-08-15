@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { resolve } from "path";
 import yargs from "yargs";
-import { listRepositoriesAndModules } from "./listRepositoriesAndModules";
+import { listRepositoriesAndModules } from "./command/list";
 import {
   subscribeToRepository,
   unsubscribeFromRepository,
-} from "./subscribeToRepository";
-import { sync } from "./syncRepositories";
-import { drawDependencyTree } from "./dependencyTree";
-import { outputLoadOrder } from "./loadOrder";
+} from "./command/subscribe";
+import { sync } from "./command/sync";
+import { drawDependencyTree } from "./command/tree";
+import { outputLoadOrder } from "./command/loadOrder";
 
 yargs
   .option("verbose", {
