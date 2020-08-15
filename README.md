@@ -8,11 +8,22 @@ Kuruma is designed around **reproducibility**. It lets you create reproducible F
 
 All of the the main commands work by making changes to your Kuruma config file. The only exception to this is the `sync` command, which inspects your Kuruma config file, and compares it to what is currently installed in your FiveM server's resources folder, and ensures that required resources are installed.
 
+## Roadmap for v1.0.0
+
+- [x] Subscribe/unsubscribe from repositories
+- [x] Synchronise installed modules
+- [x] Automatically generate resource load order
+- [ ] Enable/disable individual modules
+- [ ] Fancy [listr](https://npm.im/listr)-based CLI
+- [ ] Internationalisation
+- [ ] Automatic server config
+- [ ] Database migration capabilities
+
 ## Installation
 
 You can install Kuruma in the terminal using [yarn](https://yarnpkg.com).
 
-```
+```bash
 yarn global add kuruma-cli
 ```
 
@@ -20,17 +31,17 @@ yarn global add kuruma-cli
 
 You can run Kuruma in the terminal using either `kuruma` or `krm`:
 
-```sh
-kuruma [command]
+```bash
+kuruma
 # or
-krm [command]
+krm
 ```
 
 Running without a command will show information on how to use Kuruma.
 
-### GitHub Token
+### GitHub authentication
 
-Some commands access the GitHub API. While this can be used without authentication, there are harsh rate limits on unauthenticated API requests.
+Some commands access the GitHub API. While they can be used without authentication, there are harsh rate limits on unauthenticated API requests.
 
 If you want to use Kuruma without hitting GitHub API rate limits, or you want to subscribe to private GitHub repositories, you should supply a GitHub auth token using the `GITHUB_AUTH_TOKEN` environment variable.
 
@@ -136,6 +147,8 @@ You can pipe this output into your `server.cfg` using this command:
 ```bash
 kuruma load-order >> ./path/to/server.cfg
 ```
+
+> **Note:** In order for this to work correctly, resources must correctly specify their `dependency` or `dependencies` in their `fxmanifest.lua` (or `__resource.lua`) file. The ability to manually override module dependencies will be added in a future version.
 
 ## Usage with Docker
 
