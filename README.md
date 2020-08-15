@@ -57,7 +57,7 @@ kuruma unsubscribe extendedmode/extendedmode
 kuruma subscribe https://github.com/extendedmode/extendedmode
 ```
 
-### Enabling a resource
+### Enable a resource
 
 Enabling a resource will update the Kuruma config file to show that we want to make sure the resource is installed when we next run the `sync` command.
 
@@ -65,7 +65,9 @@ Enabling a resource will update the Kuruma config file to show that we want to m
 kuruma enable extendedmode
 ```
 
-### Disabling a resource
+If the resource depends on other resources that are already available from the subscribed repositories, they will automatically be enabled.
+
+### Disable a resource
 
 Disabling a resource will update the Kuruma config file to show that we want to make sure the resource is removed when we next run the `sync` command.
 
@@ -80,8 +82,36 @@ Once you have subscribed to some repositories, and enabled some resources from t
 - Any repositories you've subscribed to that have not been downloaded locally yet will be downloaded
 - Any repositories you're no longer subscribed to will be deleted
 - Any resources you've enabled that aren't installed yet will be copied from their repository
-- Any resources you've disabled that are still installed will be deleted.
+- Any resources you've disabled that are still installed will be deleted
 
 ```bash
 kuruma sync
 ```
+
+## Usage with Docker
+
+Kuruma is designed to play nice with Docker, and can be used to build Docker images of your server setup.
+
+### Reproducible server builds
+
+```Dockerfile
+FROM node:alpine AS kuruma
+ARG GITHUB_AUTH_TOKEN
+ENV GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
+WORKDIR /resources
+RUN yarn global add kuruma-cli
+COPY kuruma.yml kuruma.yml
+RUN node kuruma sync
+
+FROM spritsail/fivem
+COPY server.cfg /config/server.cfg
+COPY --from=kuruma /resources /config/resources
+```
+
+This Dockerfile installs Kuruma in a temporary build container, and uses the `sync` command to install the required resources. It then copies these into the final server image, along with your `server.cfg`.
+
+For convenience (and upgrading an existing server), the `kuruma.yml` file is also copied into the resources folder.
+
+Note that it is possible (and highly recommended) to provide your GitHub auth token as a build argument.
+
+In the future, a pre-built public image may be provided to make this easier.
