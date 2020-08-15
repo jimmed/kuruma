@@ -13,7 +13,7 @@ All of the the main commands work by making changes to your Kuruma config file. 
 - [x] Subscribe/unsubscribe from repositories
 - [x] Synchronise installed resources
 - [x] Automatically generate resource load order
-- [ ] Enable/disable individual resources
+- [x] Enable/disable individual resources
 - [ ] Track specific branches/refs of a repository
 - [ ] Fancy [listr](https://npm.im/listr)-based CLI
 - [ ] Update a repository and its resources
