@@ -5,6 +5,7 @@ import { disableResource } from "./command/disable";
 import { enableResource } from "./command/enable";
 import { listRepositoriesAndResources } from "./command/list";
 import { outputLoadOrder } from "./command/loadOrder";
+import { outputSql } from "./command/sql";
 import { subscribeToRepository } from "./command/subscribe";
 import { sync } from "./command/sync";
 import { unsubscribeFromRepository } from "./command/unsubscribe";
@@ -85,5 +86,11 @@ yargs
     "lists the load order of resources",
     () => {},
     outputLoadOrder
+  )
+  .command(
+    "sql",
+    "lists the SQL files found in cached resources in load order",
+    () => {},
+    outputSql
   )
   .demandCommand().argv;

@@ -1,9 +1,14 @@
 import { ResourceNode } from "../ResourceNode";
 
 describe("ResourceNode", () => {
+  const commonProps = {
+    repository: "test-owner/test-repo",
+    sha: "1234",
+  } as const;
   describe("ResourceNode.from()", () => {
     it("returns a new ResourceNode", () => {
       const node = ResourceNode.from({
+        ...commonProps,
         resource: "A",
         requires: [],
         provides: "A",
@@ -15,16 +20,19 @@ describe("ResourceNode", () => {
   describe("ResourceNode.resolveDependencies()", () => {
     it("fills the provided Set with the correct load order", () => {
       const nodeA = ResourceNode.from({
+        ...commonProps,
         resource: "A",
         requires: ["B", "C"],
         provides: "A",
       });
       const nodeD = ResourceNode.from({
+        ...commonProps,
         resource: "D",
         requires: [],
         provides: "B",
       });
       const nodeC = ResourceNode.from({
+        ...commonProps,
         resource: "C",
         requires: ["B"],
         provides: "C",
@@ -43,11 +51,13 @@ describe("ResourceNode", () => {
   describe("<ResourceNode>.addDependency()", () => {
     it("adds the node to its internal dependencies set", () => {
       const node = ResourceNode.from({
+        ...commonProps,
         resource: "A",
         requires: ["B"],
         provides: "A",
       });
       const otherNode = ResourceNode.from({
+        ...commonProps,
         resource: "B",
         requires: [],
         provides: "B",
@@ -64,6 +74,7 @@ describe("ResourceNode", () => {
     describe("when there are no dependencies", () => {
       it("is an empty array", () => {
         const node = ResourceNode.from({
+          ...commonProps,
           resource: "A",
           requires: [],
           provides: "A",
@@ -75,11 +86,13 @@ describe("ResourceNode", () => {
     describe("when there are unmet dependencies", () => {
       it("is an array of unmet dependency names", () => {
         const nodeA = ResourceNode.from({
+          ...commonProps,
           resource: "A",
           requires: ["B", "C"],
           provides: "A",
         });
         const nodeC = ResourceNode.from({
+          ...commonProps,
           resource: "C",
           requires: [],
           provides: "C",
@@ -95,16 +108,19 @@ describe("ResourceNode", () => {
     describe("when all dependencies are met", () => {
       it("is an empty array", () => {
         const nodeA = ResourceNode.from({
+          ...commonProps,
           resource: "A",
           requires: ["B", "C"],
           provides: "A",
         });
         const nodeD = ResourceNode.from({
+          ...commonProps,
           resource: "D",
           requires: [],
           provides: "B",
         });
         const nodeC = ResourceNode.from({
+          ...commonProps,
           resource: "C",
           requires: ["B"],
           provides: "C",

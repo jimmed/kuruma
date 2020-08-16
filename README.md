@@ -151,7 +151,7 @@ You can pipe this output into your `server.cfg` using this command:
 kuruma load-order >> ./path/to/server.cfg
 ```
 
-> **Note:** In order for this to work correctly, resources must correctly specify their `dependency` or `dependencies` in their `fxmanifest.lua` (or `__resource.lua`) file. The ability to manually override resource dependencies will be added in a future version.
+> **Note:** In order for this to work correctly, resources must correctly specify their dependencies in their `fxmanifest.lua` (or `__resource.lua`) file. The ability to manually override resource dependencies will be added in a future version.
 
 ## Usage with Docker
 

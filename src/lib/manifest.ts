@@ -223,11 +223,18 @@ export function parseManifestFile(
   }
 }
 
+export interface ManifestWrapper<M extends AnyManifestFile> {
+  manifest: M;
+  repository: string;
+  path: string;
+  sha: string;
+}
+
 export const getManifestsFromConfig = async (
   config: ConfigFile,
   cachePath: string
-): Promise<Record<string, AnyManifestFile>> =>
-  Object.fromEntries(
+): Promise<Record<string, ManifestWrapper<any>>> =>
+  Object.fromEntries<ManifestWrapper<any>>(
     await Promise.all(
       config.resources.filter(get("enabled")).map(async (mod) => {
         const { sha } = getRepositoryFromConfig(config, mod.repository)!;
@@ -237,9 +244,17 @@ export const getManifestsFromConfig = async (
         const resourceName = [mod.repository, ...(mod.path ? [mod.path] : [])]
           .join("/")
           .split("/")
-          .slice(-1);
+          .slice(-1)[0];
         const manifest = await readManifestFile(resourcePath);
-        return [resourceName, manifest];
+        return [
+          resourceName,
+          {
+            repository: mod.repository,
+            path: mod.path,
+            sha,
+            manifest,
+          },
+        ] as [string, ManifestWrapper<any>];
       })
     )
   );

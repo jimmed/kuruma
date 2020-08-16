@@ -1,4 +1,5 @@
 import { Dependency } from "./index";
+import { join, resolve } from "path";
 
 export class ResourceNode {
   static from(dependency: Dependency) {
@@ -33,6 +34,18 @@ export class ResourceNode {
 
   public get requires(): string[] {
     return this.source.requires ?? [];
+  }
+
+  public get path(): string | undefined {
+    return this.source.path;
+  }
+
+  public get cachePath(): string {
+    return join(this.source.sha, this.source.path ?? ".");
+  }
+
+  public get repository(): string {
+    return this.source.repository;
   }
 
   public addDependency(dependency: ResourceNode) {
