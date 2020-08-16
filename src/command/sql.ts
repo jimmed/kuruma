@@ -8,26 +8,54 @@ import { SyncRepositoriesArgs } from "./sync";
 
 export interface OutputSqlArgs extends SyncRepositoriesArgs {
   locale: string;
+  transaction: boolean;
 }
 
 export const outputSql = async (args: OutputSqlArgs) => {
   const config = await getConfig(args.config);
   const manifests = await getManifestsFromConfig(config, args.cache);
-  const dependencyGraph = resolveDependencyGraphFromManifests(manifests);
+  const { loadOrder } = resolveDependencyGraphFromManifests(manifests);
 
-  for (const resource of dependencyGraph.loadOrder) {
+  if (!loadOrder.size) {
+    console.warn("No resources found");
+    return;
+  }
+
+  if (args.transaction) {
+    console.log("START TRANSACTION; -- migration");
+  }
+
+  for (const resource of loadOrder) {
     const cachePath = resolve(args.cache, resource.cachePath);
     const sqlFiles = await findSqlFiles(cachePath, args.locale);
+
     if (sqlFiles.length) {
       console.log("\n-- RESOURCE\n--", resource.name, "\n--", cachePath);
+      if (args.transaction) {
+        console.log("START TRANSACTION; -- resource");
+      }
 
       for (const sqlFile of sqlFiles) {
         const sqlPath = resolve(cachePath, sqlFile);
-        console.log("\n-- FILE\n--", sqlFile, "\n");
+        console.log("\n-- FILE\n--", sqlFile);
         const sqlText = await fs.readFile(sqlPath, "utf8");
+        if (args.transaction) {
+          console.log("START TRANSACTION; -- file");
+        }
         console.log(sqlText);
+        if (args.transaction) {
+          console.log("COMMIT; -- file");
+        }
+      }
+
+      if (args.transaction) {
+        console.log("COMMIT; -- resource");
       }
     }
+  }
+
+  if (args.transaction) {
+    console.log("COMMIT; -- migration");
   }
 };
 

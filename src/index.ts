@@ -91,11 +91,17 @@ yargs
     "sql",
     "lists the SQL files found in cached resources in load order",
     (yargs) =>
-      yargs.option("locale", {
-        type: "string",
-        default: "en",
-        describe: "the locale of SQL scripts to keep",
-      }),
+      yargs
+        .option("locale", {
+          type: "string",
+          default: "en",
+          describe: "the locale of SQL scripts to keep",
+        })
+        .option("transaction", {
+          type: "boolean",
+          default: false,
+          describe: "whether to add transactions to scripts",
+        }),
     outputSql
   )
   .demandCommand().argv;
