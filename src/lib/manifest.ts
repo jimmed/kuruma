@@ -48,17 +48,20 @@ export interface CommonResourceManifestProperties {
    * Defines a script to be loaded on the client, and implicitly adds the file to the resource packfile.
    * The extension determines which script loader will handle the file.
    */
-  client_script?: string[];
+  client_script?: string;
+  client_scripts?: string[];
   /**
    * Defines a script to be loaded on the server.
    * The extension determines which script loader will handle the file, as with `client_script`.
    */
-  server_script?: string[];
+  server_script?: string;
+  server_scripts?: string[];
   /**
    * Defines a script to be loaded on both sides, and adds the file to the resource packfile.
    * The extension determines which script loader will handle the file, as with `client_script`.
    */
-  shared_script?: string[];
+  shared_script?: string;
+  shared_scripts?: string[];
   /**
    * Defines a global function to be exported by a client script.
    * In Lua, this will export `_G[exportName]` as `exportName`.
