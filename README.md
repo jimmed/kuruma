@@ -14,6 +14,7 @@ All of the the main commands work by making changes to your Kuruma config file. 
 - [x] Synchronise installed resources
 - [x] Automatically generate resource load order
 - [x] Enable/disable individual resources
+- [x] Generate database install SQL
 - [ ] Track specific branches/refs of a repository
 - [ ] Fancy [listr](https://npm.im/listr)-based CLI
 - [ ] Update a repository and its resources
@@ -152,6 +153,43 @@ kuruma load-order >> ./path/to/server.cfg
 ```
 
 > **Note:** In order for this to work correctly, resources must correctly specify their dependencies in their `fxmanifest.lua` (or `__resource.lua`) file. The ability to manually override resource dependencies will be added in a future version.
+
+### Generating SQL installer
+
+Just like with building a large load order, the same can be true of manually executing database scripts for each resource.
+
+To make life easier, Kuruma can find all of the SQL files provided by the resources in your load order, and output them to the terminal so you can install everything in one command.
+
+#### Specifying locale
+
+Some resources provide multiple versions of the same SQL, but for different languages.
+These files are typically named `en_something.sql` or `fr-something.sql`, where `en` or `fr` is the target language.
+
+Kuruma detects files in this pattern automatically, and will ignore any files that don't match the specified locale. By default, this locale is `en`, but you may override it with the `--locale` option:
+
+```bash
+# English (default)
+kuruma sql > install_en.sql
+
+# French
+kuruma sql --locale fr > install_fr.sql
+```
+
+#### Piping into a file
+
+```bash
+kuruma sql > install.sql
+```
+
+This will create an `install.sql` file in the current directory.
+
+#### Applying directly to the database
+
+```bash
+kuruma sql > mysql
+```
+
+This will send SQL directly to the local MySQL client. Note that this will not work with passing the MySQL password via STDIN.
 
 ## Usage with Docker
 

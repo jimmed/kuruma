@@ -6,7 +6,9 @@ import { resolveDependencyGraphFromManifests } from "../lib/dependencies";
 import { getManifestsFromConfig } from "../lib/manifest";
 import { SyncRepositoriesArgs } from "./sync";
 
-export interface OutputSqlArgs extends SyncRepositoriesArgs {}
+export interface OutputSqlArgs extends SyncRepositoriesArgs {
+  locale: string;
+}
 
 export const outputSql = async (args: OutputSqlArgs) => {
   const config = await getConfig(args.config);
@@ -15,7 +17,7 @@ export const outputSql = async (args: OutputSqlArgs) => {
 
   for (const resource of dependencyGraph.loadOrder) {
     const cachePath = resolve(args.cache, resource.cachePath);
-    const sqlFiles = await findSqlFiles(cachePath);
+    const sqlFiles = await findSqlFiles(cachePath, args.locale);
     if (sqlFiles.length) {
       console.log("\n-- RESOURCE\n--", resource.name, "\n--", cachePath);
 

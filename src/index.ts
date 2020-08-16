@@ -90,7 +90,12 @@ yargs
   .command(
     "sql",
     "lists the SQL files found in cached resources in load order",
-    () => {},
+    (yargs) =>
+      yargs.option("locale", {
+        type: "string",
+        default: "en",
+        describe: "the locale of SQL scripts to keep",
+      }),
     outputSql
   )
   .demandCommand().argv;
