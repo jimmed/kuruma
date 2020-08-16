@@ -77,7 +77,6 @@ export async function findSqlFiles(cachePath: string, targetLocale = "en") {
       otherLocaleFiles.add(file);
     }
   });
-  // Keep if it's not in a conflicting file set or it's our target locale
   return files.filter((file) => !otherLocaleFiles.has(file));
 }
 
