@@ -1,9 +1,9 @@
 import { promises as fs } from "fs";
 import { safeDump as stringifyYaml, safeLoad as parseYaml } from "js-yaml";
-import { flow, split, tap, where, matches } from "lodash/fp";
+import { flow, matches, split, tap } from "lodash/fp";
 
 export interface Repository {
-  org: string;
+  owner: string;
   name: string;
   sha: string;
 }
@@ -23,7 +23,7 @@ export interface Resource {
 }
 
 export interface ConfigFile {
-  _exists: boolean;
+  _exists?: boolean;
   version: 1;
   // The subscribed repositories
   repositories: Repository[];
@@ -71,8 +71,8 @@ export function validateConfig(config: Partial<ConfigFile>) {
   config.repositories?.forEach((repo, index) => {
     if (typeof repo !== "object")
       throw new Error(`Repository #${index + 1} must be an object`);
-    if (typeof repo.org !== "string" || !repo.org)
-      throw new Error(`Repository #${index + 1}'s org must be a string`);
+    if (typeof repo.owner !== "string" || !repo.owner)
+      throw new Error(`Repository #${index + 1}'s owner must be a string`);
     if (typeof repo.name !== "string" || !repo.name)
       throw new Error(`Repository #${index + 1}'s name must be a string`);
     if (typeof repo.sha !== "string" || !repo.sha)

@@ -38,6 +38,7 @@
   "dependencies": {
     "@octokit/rest": "^18.0.3",
     "decompress": "^4.2.1",
+    "immer": "^7.0.7",
     "js-yaml": "^3.14.0",
     "listr": "^0.14.3",
     "lodash": "^4.17.19",

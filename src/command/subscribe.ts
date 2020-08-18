@@ -58,7 +58,7 @@ export async function subscribeToRepository({
       title: "Check if already subscribed",
       task: (ctx) => {
         ctx.alreadySubscribed = ctx.config!.repositories.some(
-          (r) => r.name === name && r.org === owner
+          (r) => r.name === name && r.owner === owner
         );
       },
     },
@@ -148,7 +148,7 @@ export async function subscribeToRepository({
           ...ctx.config!,
           repositories: [
             ...ctx.config!.repositories,
-            { org: owner, name: name, sha: ctx.branch!.sha },
+            { owner, name, sha: ctx.branch!.sha },
           ],
           resources: [
             ...ctx.config!.resources,

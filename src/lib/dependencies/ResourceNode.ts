@@ -1,5 +1,5 @@
+import { join } from "path";
 import { Dependency } from "./index";
-import { join, resolve } from "path";
 
 export class ResourceNode {
   static from(dependency: Dependency) {
