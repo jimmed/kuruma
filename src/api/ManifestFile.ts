@@ -8,8 +8,8 @@ import {
   StringCallExpression,
   StringLiteral,
 } from "luaparse";
-import { AnyManifestFile, ManifestFileType } from "../lib/manifest";
 import { basename } from "path";
+import { AnyManifestFile, ManifestFileType } from "../lib/manifest";
 
 export class ManifestFile {
   static fileNameRegexp = new RegExp(

@@ -7,7 +7,7 @@ export class Resource {
     return new Resource(repository, manifestFile);
   }
 
-  static getNameFromManifestPath(path: string) {
+  static getNameFromManifestPath(path: string): string | undefined {
     return path
       .split("/")
       .filter((x) => x !== ".")
@@ -83,11 +83,6 @@ export class Resource {
       .filter((x): x is string => !!x?.startsWith("@"))
       .map((x) => x.slice(1).split("/")[0]);
 
-    console.log({
-      properties: this.manifestFile.properties,
-      namedDependencies,
-      inferredDependencies,
-    });
     return [...new Set([...namedDependencies, ...inferredDependencies])];
   }
 
