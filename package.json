@@ -1,6 +1,6 @@
 {
   "name": "kuruma-cli",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": "Jim O'Brien <jim@jimmed.net>",
