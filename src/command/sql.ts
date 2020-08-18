@@ -24,6 +24,9 @@ export const outputSql = async (args: OutputSqlArgs) => {
   if (args.transaction) {
     console.log("START TRANSACTION; -- migration");
   }
+  console.log("DROP DATABASE IF EXISTS `extendedmode`;");
+  console.log("CREATE DATABASE `extendedmode`;");
+  console.log("USE `extendedmode`;");
 
   for (const resource of loadOrder) {
     const cachePath = resolve(args.cache, resource.cachePath);
@@ -42,7 +45,7 @@ export const outputSql = async (args: OutputSqlArgs) => {
         if (args.transaction) {
           console.log("START TRANSACTION; -- file");
         }
-        console.log(sqlText);
+        console.log(sqlText.trim().replace(/;$/, "") + ";");
         if (args.transaction) {
           console.log("COMMIT; -- file");
         }
