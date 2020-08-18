@@ -15,8 +15,8 @@ All of the the main commands work by making changes to your Kuruma config file. 
 - [x] Automatically generate resource load order
 - [x] Enable/disable individual resources
 - [x] Generate database install SQL
+- [x] Fancy [listr](https://npm.im/listr)-based CLI
 - [ ] Track specific branches/refs of a repository
-- [ ] Fancy [listr](https://npm.im/listr)-based CLI
 - [ ] Update a repository and its resources
 - [ ] Interactive update command
 - [ ] Automatic server config

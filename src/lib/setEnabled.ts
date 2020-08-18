@@ -1,4 +1,10 @@
-import { getConfig, ConfigFile, saveConfigFile } from "../lib/configFile";
+import {
+  ConfigFile,
+  getConfig,
+  Resource,
+  saveConfigFile,
+} from "../lib/configFile";
+import Listr from "listr";
 
 export interface SetResourceEnabledArgs {
   config: string;
@@ -6,42 +12,58 @@ export interface SetResourceEnabledArgs {
   enabled: boolean;
 }
 
-export async function setResourceEnabled(
-  args: SetResourceEnabledArgs
-): Promise<void> {
-  const config = await getConfig(args.config);
-  const resource = config.resources.find(
-    (res) =>
-      (res.path ?? res.repository).split("/").slice(-1)[0] === args.resource
-  );
+export interface SetResourceEnabledContext {
+  configPath: string;
+  resourceName: string;
+  enabled: boolean;
+  resource?: Resource;
+  config?: ConfigFile;
+  alreadyEnabled?: boolean;
+}
 
-  if (!resource) {
-    throw new Error(
-      `Resource "${args.resource}" does not exist within any of the subscribed repositories`
-    );
-  }
+export async function setResourceEnabled(args: SetResourceEnabledArgs) {
+  return new Listr<SetResourceEnabledContext>([
+    {
+      title: "Read config file",
+      task: async (ctx) => {
+        ctx.config = await getConfig(ctx.configPath);
+      },
+    },
+    {
+      title: "Find resource in config",
+      task: (ctx) => {
+        ctx.resource = ctx.config!.resources.find(
+          (res) =>
+            (res.path ?? res.repository).split("/").slice(-1)[0] ===
+            ctx.resourceName
+        );
 
-  if (resource.enabled === args.enabled) {
-    console.warn(
-      `Resource "${args.resource}" is already ${
-        args.enabled ? "enabled" : "disabled"
-      }`
-    );
-    return;
-  }
+        if (!ctx.resource) {
+          throw new Error(
+            `Resource "${ctx.resourceName}" does not exist in the config file`
+          );
+        }
 
-  const updatedConfig: ConfigFile = {
-    ...config,
-    resources: config.resources.map((res) =>
-      res === resource ? { ...res, enabled: args.enabled } : res
-    ),
-  };
+        ctx.alreadyEnabled = !!ctx.resource.enabled;
+      },
+    },
+    {
+      title: "Update config file",
+      skip: (ctx) => ctx.enabled === ctx.alreadyEnabled,
+      task: async (ctx) => {
+        const updatedConfig: ConfigFile = {
+          ...ctx.config!,
+          resources: ctx.config!.resources.map((res) =>
+            res === ctx.resource ? { ...res, enabled: args.enabled } : res
+          ),
+        };
 
-  await saveConfigFile(args.config, updatedConfig);
-
-  console.log(
-    `${args.enabled ? "Enabled" : "Disabled"} resource "${
-      args.resource
-    }" from repository "${resource.repository}"`
-  );
+        await saveConfigFile(ctx.configPath, updatedConfig);
+      },
+    },
+  ]).run({
+    configPath: args.config,
+    resourceName: args.resource,
+    enabled: args.enabled,
+  });
 }

@@ -5,6 +5,6 @@ export interface EnableResourceArgs {
   resource: string;
 }
 
-export async function enableResource(args: EnableResourceArgs): Promise<void> {
+export async function enableResource(args: EnableResourceArgs) {
   return setResourceEnabled({ ...args, enabled: true });
 }

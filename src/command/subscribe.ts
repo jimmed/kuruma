@@ -1,12 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import {
-  CallStatement,
-  Identifier,
-  parse as parseLua,
-  StringCallExpression,
-  StringLiteral,
-  TableConstructorExpression,
-} from "luaparse";
+import Listr from "listr";
 import { parse as parseUrl } from "url";
 import {
   ConfigFile,
@@ -14,11 +7,14 @@ import {
   Resource,
   saveConfigFile,
 } from "../lib/configFile";
+import { AnyManifestFile, parseManifestFile } from "../lib/manifest";
 
 export interface SubscribeToRepositoryArgs {
   repo: string;
   config: string;
 }
+
+const gh = new Octokit({ auth: process.env.GITHUB_AUTH_TOKEN });
 
 export function getRepoIdentifier(url: string) {
   const { protocol, hostname, pathname } = parseUrl(url);
@@ -41,139 +37,144 @@ export async function subscribeToRepository({
   repo: url,
   config: configPath,
 }: SubscribeToRepositoryArgs) {
-  const currentConfig = await getConfig(configPath);
-  const { owner, repo } = getRepoIdentifier(url);
-  if (
-    currentConfig.repositories.some((r) => r.name === repo && r.org === owner)
-  ) {
-    console.info(`Already subscribed to ${owner}/${repo}`);
-    return;
-  }
-  const gh = new Octokit({ auth: process.env.GITHUB_AUTH_TOKEN });
-  console.info(`Fetching GitHub repository (${owner}/${repo})...`);
-  const { data: repository } = await gh.repos.get({ owner, repo });
-
-  if (repository.archived) {
-    console.warn("Repository is archived");
-  }
-
-  console.info(
-    `Getting file listing for ${repository.default_branch} branch...`
-  );
-  const { data: master } = await gh.git.getTree({
-    owner,
-    repo,
-    tree_sha: repository.default_branch,
-    recursive: "true",
-  });
-
-  if (master.truncated) {
-    console.warn(
-      "GitHub truncated file listing result, may not be able to find "
-    );
-  }
-
-  const manifests = master.tree.filter(
-    ({ type, path }) =>
-      (type === "blob" && path.endsWith("fxmanifest.lua")) ||
-      path.endsWith("__resource.lua")
-  );
-
-  if (!manifests.length) {
-    throw new Error(
-      "Repository does not contain any fxmanifest.lua or __resource.lua files"
-    );
-  }
-
-  const resources = Object.fromEntries(
-    await Promise.all(
-      manifests.map(async (manifest) => {
-        const { data: file } = await gh.git.getBlob({
-          owner,
-          repo,
-          file_sha: manifest.sha,
-        });
-
-        const content = Buffer.from(file.content, "base64").toString("utf8");
-
-        const resources = Object.fromEntries(
-          parseLua(content)
-            .body.filter((x): x is CallStatement => x.type === "CallStatement")
-            .map((x) => {
-              const identifier = x.expression.base as
-                | Identifier
-                | StringCallExpression;
-              switch (x.expression.type) {
-                case "StringCallExpression": {
-                  return [
-                    (identifier as Identifier).name,
-                    (x.expression.argument as StringLiteral).raw.slice(1, -1),
-                  ];
-                }
-                case "TableCallExpression":
-                  return [
-                    (identifier as Identifier).name ??
-                      ((identifier as StringCallExpression).base as Identifier)
-                        .name,
-                    (x.expression
-                      .arguments as TableConstructorExpression).fields
-                      .filter((field) => field.value.type === "StringLiteral")
-                      .map((field) =>
-                        (field.value as StringLiteral).raw.slice(1, -1)
-                      ),
-                  ];
-              }
-              return [];
-            })
-            .filter((x) => x?.[0])
+  const { owner, repo: name } = getRepoIdentifier(url);
+  return new Listr<{
+    owner: string;
+    name: string;
+    configPath: string;
+    config?: ConfigFile;
+    alreadySubscribed?: boolean;
+    repository?: any;
+    branch?: any;
+    manifestFiles: Record<string, AnyManifestFile>;
+  }>([
+    {
+      title: "Read config file",
+      task: async (ctx) => {
+        ctx.config = await getConfig(ctx.configPath);
+      },
+    },
+    {
+      title: "Check if already subscribed",
+      task: (ctx) => {
+        ctx.alreadySubscribed = ctx.config!.repositories.some(
+          (r) => r.name === name && r.org === owner
         );
-        return [manifest.path, resources];
-      })
-    )
-  );
-  const entries = Object.entries<Resource>(resources);
-  console.log(
-    `Repository contains ${entries.length} resource${
-      entries.length === 1 ? "" : "s"
-    }:`
-  );
-  Object.entries(resources).forEach(([path, mod]: [string, any]) => {
-    console.info(
-      ` - ${path.split("/").slice(-2, -1)[0] || repo} (${
-        mod.version ?? "unknown version"
-      })`
-    );
-  });
+      },
+    },
+    {
+      title: `Fetch repository metadata`,
+      task: async (ctx) => {
+        const { data: repository } = await gh.repos.get({ owner, repo: name });
 
-  const newConfig: ConfigFile = {
-    ...currentConfig,
-    repositories: [
-      ...currentConfig.repositories,
-      { org: owner, name: repo, sha: master.sha },
-    ],
-    resources: [
-      ...currentConfig.resources,
-      ...entries.map(([path]) => {
-        const resourcePathParts = path.split("/").slice(0, -1);
-        const resourceNamespace = resourcePathParts
-          .filter((x) => x.match(/^\[.+\]$/))
-          .map((x) => x.slice(1, -1));
-        const resourcePath = resourcePathParts.join("/");
+        if (repository.archived) {
+          console.warn(`Repository ${owner}/${name} is archived`);
+        }
 
-        const mod: Resource = {
-          repository: `${owner}/${repo}`,
-          namespace: [repo, ...resourceNamespace],
+        ctx.repository = repository;
+      },
+      skip: (ctx) => ctx.alreadySubscribed,
+    },
+    {
+      title: "Fetch git tree for default branch",
+      task: async (ctx) => {
+        const { data: branch } = await gh.git.getTree({
+          owner: ctx.owner,
+          repo: ctx.name,
+          tree_sha: ctx.repository.default_branch,
+          recursive: "true",
+        });
+        if (branch.truncated) {
+          console.warn(
+            "GitHub API has truncated the tree result, some resources may be missed"
+          );
+        }
+        ctx.branch = branch;
+      },
+      skip: (ctx) => ctx.alreadySubscribed,
+    },
+    {
+      title: "Read manifest files",
+      task: async (ctx) => {
+        const manifestFiles = ctx.branch.tree.filter(
+          ({ type, path }: any) =>
+            (type === "blob" && path.endsWith("fxmanifest.lua")) ||
+            path.endsWith("__resource.lua")
+        );
+
+        if (!manifestFiles.length) {
+          throw new Error(
+            "Repository does not contain any fxmanifest.lua or __resource.lua files"
+          );
+        }
+
+        return new Listr<any>(
+          manifestFiles.map((file: any) => ({
+            title: `Analyze ${file.path}`,
+            task: async () =>
+              new Listr([
+                {
+                  title: "Fetch file content",
+                  task: async () => {
+                    const { data: manifest } = await gh.git.getBlob({
+                      owner: ctx.owner,
+                      repo: ctx.name,
+                      file_sha: file.sha,
+                    });
+
+                    const content = Buffer.from(
+                      manifest.content,
+                      "base64"
+                    ).toString("utf8");
+
+                    const resources = parseManifestFile(
+                      content
+                    ) as AnyManifestFile;
+                    ctx.manifestFiles[file.path] = resources;
+                  },
+                },
+              ]),
+          })),
+          { concurrent: true }
+        );
+      },
+      skip: (ctx) => ctx.alreadySubscribed,
+    },
+    {
+      title: "Update config file",
+      task: async (ctx) => {
+        const entries = Object.entries(ctx.manifestFiles!);
+        const newConfig: ConfigFile = {
+          ...ctx.config!,
+          repositories: [
+            ...ctx.config!.repositories,
+            { org: owner, name: name, sha: ctx.branch!.sha },
+          ],
+          resources: [
+            ...ctx.config!.resources,
+            ...entries.map(([path]) => {
+              const resourcePathParts = path.split("/").slice(0, -1);
+              const resourceNamespace = resourcePathParts
+                .filter((x) => x.match(/^\[.+\]$/))
+                .map((x) => x.slice(1, -1));
+              const resourcePath = resourcePathParts.join("/");
+
+              const mod: Resource = {
+                repository: `${owner}/${name}`,
+                namespace: [name, ...resourceNamespace],
+              };
+
+              if (resourcePath) {
+                mod.path = resourcePath;
+              }
+              return mod;
+            }),
+          ],
         };
 
-        if (resourcePath) {
-          mod.path = resourcePath;
-        }
-        return mod;
-      }),
-    ],
-  };
-
-  await saveConfigFile(configPath, newConfig);
-
-  console.log(`Subscribed to ${owner}/${repo}`);
+        await saveConfigFile(configPath, newConfig);
+      },
+      skip: (ctx) => ctx.alreadySubscribed,
+    },
+  ]).run({ configPath, owner, name, manifestFiles: {} });
 }

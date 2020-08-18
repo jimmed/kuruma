@@ -101,7 +101,7 @@ export function validateConfig(config: Partial<ConfigFile>) {
         )
       )
     ) {
-      console.log(resource);
+      console.warn(resource);
       throw new Error(
         `Resource #${
           index + 1
