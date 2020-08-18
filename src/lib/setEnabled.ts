@@ -9,12 +9,14 @@ import Listr from "listr";
 export interface SetResourceEnabledArgs {
   config: string;
   resource: string;
+  repo?: string;
   enabled: boolean;
 }
 
 export interface SetResourceEnabledContext {
   configPath: string;
   resourceName: string;
+  repositoryIdentifer?: string;
   enabled: boolean;
   resource?: Resource;
   config?: ConfigFile;
@@ -32,11 +34,24 @@ export async function setResourceEnabled(args: SetResourceEnabledArgs) {
     {
       title: "Find resource in config",
       task: (ctx) => {
-        ctx.resource = ctx.config!.resources.find(
+        const matching = ctx.config!.resources.filter(
           (res) =>
             (res.path ?? res.repository).split("/").slice(-1)[0] ===
-            ctx.resourceName
+              ctx.resourceName &&
+            (!ctx.repositoryIdentifer ||
+              ctx.repositoryIdentifer === res.repository)
         );
+        if (matching.length > 1) {
+          throw new Error(
+            `Multiple repositories provide ${ctx.resourceName}:\n${matching
+              .map((repo) => ` - ${repo.repository}`)
+              .join(
+                "\n"
+              )}\nPlease specify which repository using the --repo option`
+          );
+        }
+
+        ctx.resource = matching[0];
 
         if (!ctx.resource) {
           throw new Error(
@@ -64,6 +79,7 @@ export async function setResourceEnabled(args: SetResourceEnabledArgs) {
   ]).run({
     configPath: args.config,
     resourceName: args.resource,
+    repositoryIdentifer: args.repo,
     enabled: args.enabled,
   });
 }

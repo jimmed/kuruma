@@ -70,14 +70,18 @@ yargs
     "enable <resource>",
     "enable a resource",
     (yargs) =>
-      yargs.positional("resource", { type: "string", demandOption: true }),
+      yargs
+        .positional("resource", { type: "string", demandOption: true })
+        .option("repo", { type: "string" }),
     enableResource
   )
   .command(
     "disable <resource>",
     "disable a resource",
     (yargs) =>
-      yargs.positional("resource", { type: "string", demandOption: true }),
+      yargs
+        .positional("resource", { type: "string", demandOption: true })
+        .option("repo", { type: "string" }),
     disableResource
   )
   .command("sync", "synchronize repositories and resources", () => {}, sync)
@@ -104,4 +108,5 @@ yargs
         }),
     outputSql
   )
-  .demandCommand().argv;
+  .demandCommand()
+  .showHelpOnFail(false).argv;
