@@ -102,54 +102,56 @@ export async function syncResources() {
       title: "Compare config to target resources",
       task: async (ctx) => {
         const targetResources = await Promise.all(
-          ctx.config!.resources.map(async (mod) => {
-            const [owner, repoName] = mod.repository.split("/");
-            const target = mod.namespace
-              ? [
-                  ...(Array.isArray(mod.namespace)
-                    ? mod.namespace
-                    : [mod.namespace]
-                  ).map((x) => `[${x}]`),
-                  mod.path?.split("/").slice(-1)[0] ?? repoName,
-                ]
-              : [mod.path?.split("/").slice(-1)[0] ?? repoName];
-            const repository = ctx.config!.repositories.find(
-              (repo) => repo.org === owner && repo.name === repoName
-            );
-            if (!repository) {
-              throw new Error(
-                `Resource ${target.join("/")} depends on the ${
-                  mod.repository
-                } repository, but it is not subscribed.`
+          ctx
+            .config!.resources.filter((resource) => resource.enabled)
+            .map(async (mod) => {
+              const [owner, repoName] = mod.repository.split("/");
+              const target = mod.namespace
+                ? [
+                    ...(Array.isArray(mod.namespace)
+                      ? mod.namespace
+                      : [mod.namespace]
+                    ).map((x) => `[${x}]`),
+                    mod.path?.split("/").slice(-1)[0] ?? repoName,
+                  ]
+                : [mod.path?.split("/").slice(-1)[0] ?? repoName];
+              const repository = ctx.config!.repositories.find(
+                (repo) => repo.org === owner && repo.name === repoName
               );
-            }
-            const fromPath = mod.path
-              ? resolve(ctx.cachePath, repository.sha, mod.path)
-              : resolve(ctx.cachePath, repository.sha);
-            const toPath = resolve(ctx.targetPath!, ...target);
-            let shouldCreate = false;
-            try {
-              const stat = await fs.stat(toPath);
-              if (!stat.isDirectory()) {
-                console.log({ toPath, stat });
+              if (!repository) {
                 throw new Error(
-                  `${toPath} already exists, but is not a directory`
+                  `Resource ${target.join("/")} depends on the ${
+                    mod.repository
+                  } repository, but it is not subscribed.`
                 );
               }
-            } catch (error) {
-              if (error.code !== "ENOENT") {
-                console.error({ fromPath, toPath });
-                throw error;
-              } else {
-                shouldCreate = true;
+              const fromPath = mod.path
+                ? resolve(ctx.cachePath, repository.sha, mod.path)
+                : resolve(ctx.cachePath, repository.sha);
+              const toPath = resolve(ctx.targetPath!, ...target);
+              let shouldCreate = false;
+              try {
+                const stat = await fs.stat(toPath);
+                if (!stat.isDirectory()) {
+                  console.log({ toPath, stat });
+                  throw new Error(
+                    `${toPath} already exists, but is not a directory`
+                  );
+                }
+              } catch (error) {
+                if (error.code !== "ENOENT") {
+                  console.error({ fromPath, toPath });
+                  throw error;
+                } else {
+                  shouldCreate = true;
+                }
               }
-            }
-            return {
-              from: fromPath,
-              to: toPath,
-              shouldCreate,
-            };
-          })
+              return {
+                from: fromPath,
+                to: toPath,
+                shouldCreate,
+              };
+            })
         );
 
         ctx.resourcesToAdd = targetResources.filter(
